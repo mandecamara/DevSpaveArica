@@ -1,0 +1,19 @@
+{
+  "prochain": {
+    "titre": "SuguPrix, avec Rokia Maïga",
+    "description": "Présentation d'une plateforme qui suit les prix du riz et du sorgho au Mali : comment elle fonctionne, ce qu'elle apporte, et les défis du projet.",
+    "date": "2026-11-28",
+    "lieu": "En ligne, Google Meet",
+    "lien": "REMPLACER_LIEN_GOOGLE_FORM",
+    "debut": "20:30",
+    "fin": "21:30"
+  },
+  "passes": [
+    {
+      "titre": "Ouessè.com",
+      "date": "2026-10-17",
+      "description": "Première session DevSpace Live, avec Ézéchiel Tchokponhoue. Environ 15 participants.",
+      "slug": "ouesse-com"
+    }
+  ]
+}

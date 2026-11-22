@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><title>Admin | DevSpace Africa</title>
+<link rel="stylesheet" href="style.css"></head><body>
+<header><div class="wrap"><nav><a class="brand" href="index.html"><img src="logo.png" alt="">DevSpace Africa · Admin</a></nav></div></header>
+<section><div class="wrap" style="max-width:720px">
+<div class="tabs"><button class="tab" data-p="a" aria-selected="true">Prochain événement</button><button class="tab" data-p="b" aria-selected="false">Résumé d'un live</button></div>
+
+<div class="panel on" id="a" style="max-width:none">
+<p class="lead" style="font-size:16px">Remplis le formulaire, télécharge <b>events.json</b>, puis remplace ce fichier dans ton projet. Le site se met à jour après la publication.</p>
+<form id="f">
+<label for="titre">Titre</label><input id="titre" required>
+<label for="description">Description</label><textarea id="description"></textarea>
+<label for="date">Date</label><input id="date" type="date" required>
+<label for="debut">Début <small>(heure de Conakry, GMT)</small></label><input id="debut" type="time" required>
+<label for="fin">Fin</label><input id="fin" type="time" required>
+<label for="lieu">Lieu</label><input id="lieu" required>
+<label for="lien">Lien d'inscription <small>(Google Form)</small></label><input id="lien" type="url">
+<label class="check"><input type="checkbox" id="archive" checked> Archiver l'événement actuel dans « Sessions précédentes » (s'il est différent)</label>
+<button class="btn" type="submit">Télécharger events.json</button>
+<div class="msg" id="msg" role="status"></div>
+</form>
+<h2 style="margin-top:40px;font-size:24px">Sessions précédentes</h2>
+<div id="list"></div>
+</div>
+
+<div class="panel" id="b" style="max-width:none">
+<p class="lead" style="font-size:16px">Crée la page de résumé d'un live. Tu obtiens 3 fichiers : la page (à mettre dans le dossier <b>live</b>), <b>events.json</b> et <b>sitemap.xml</b> (à remplacer à la racine). <b>Ouvre cette admin depuis ton vrai site</b> pour que les adresses soient correctes.</p>
+<form id="g">
+<label for="r_titre">Sujet / titre du live</label><input id="r_titre" required placeholder="SuguPrix, avec Rokia Maïga">
+<label for="r_date">Date</label><input id="r_date" type="date" required>
+<label for="r_inter">Intervenant(e)</label><input id="r_inter" required>
+<label for="r_part">Nombre de participants <small>(facultatif)</small></label><input id="r_part" type="number" min="0">
+<label for="r_resume">Résumé <small>(sépare les paragraphes par une ligne vide)</small></label><textarea id="r_resume" required minlength="40" style="min-height:160px"></textarea>
+<label for="r_points">Points clés <small>(un par ligne, facultatif)</small></label><textarea id="r_points"></textarea>
+<label for="r_merci">Remerciements <small>(facultatif)</small></label><textarea id="r_merci" style="min-height:70px"></textarea>
+<button class="btn" type="submit">Générer les fichiers</button>
+<div class="msg" id="msg2" role="status"></div>
+</form></div>
+</div></section>
+<script>
+let data={prochain:{},passes:[]};
+const $=id=>document.getElementById(id);
+const F=["titre","description","date","debut","fin","lieu","lien"];
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const slug=s=>s.normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,60);
+const frDate=d=>new Date(d+"T12:00:00").toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+function save(name,text,type){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;a.click()}
+
+function pageHTML(d,origin){
+ const url=origin+"/live/"+d.slug, t=d.titre+" | DevSpace Live | DevSpace Africa";
+ const paras=d.resume.split(/\n\s*\n/).map(p=>"<p>"+esc(p.trim()).replace(/\n/g,"<br>")+"</p>").join("\n");
+ const pts=d.points.length?"<h2>Points clés</h2><ul class=\"pts\">"+d.points.map(p=>"<li>"+esc(p)+"</li>").join("")+"</ul>":"";
+ const merci=d.merci?"<h2>Remerciements</h2><p>"+esc(d.merci)+"</p>":"";
+ const part=d.participants?" · "+d.participants+" participants":"";
+ const desc=d.resume.replace(/\s+/g," ").slice(0,155);
+ const ld={"@context":"https://schema.org","@type":"Event",name:"DevSpace Live : "+d.titre,description:desc,startDate:d.date+"T20:30:00+00:00",endDate:d.date+"T21:30:00+00:00",eventStatus:"https://schema.org/EventScheduled",eventAttendanceMode:"https://schema.org/OnlineEventAttendanceMode",location:{"@type":"VirtualLocation",url:origin+"/"},isAccessibleForFree:true,inLanguage:"fr",performer:{"@type":"Person",name:d.intervenant},organizer:{"@type":"Organization",name:"DevSpace Africa",url:origin+"/"}};
+ return `<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${esc(t)}</title>
+<meta name="description" content="${esc(desc)}">
+<link rel="canonical" href="${url}">
+<meta name="theme-color" content="#06122E">
+<meta property="og:type" content="article"><meta property="og:title" content="${esc(t)}"><meta property="og:description" content="${esc(desc)}"><meta property="og:url" content="${url}"><meta property="og:image" content="${origin}/og.png"><meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="../logo.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="../style.css">
+<style>.art{max-width:720px}.art p{margin:0 0 16px;font-size:18px}.art h2{font-size:24px;margin:34px 0 12px}.pts{margin:0 0 16px 20px;font-size:18px}.pts li{margin-bottom:8px}.meta{color:var(--muted);margin-bottom:26px}</style>
+<script type="application/ld+json">${JSON.stringify(ld)}<\/script></head><body>
+<header><div class="wrap"><nav><a class="brand" href="../index.html"><img src="../logo.png" alt="Logo DevSpace Africa" width="36" height="36">DevSpace Africa</a><div class="links"><a href="../index.html#live">Tous les lives</a><a class="btn" href="../index.html#rejoindre">Rejoindre</a></div></nav></div></header>
+<main><section><div class="wrap art">
+<div class="tag">DevSpace Live · Résumé</div>
+<h1 style="font-size:clamp(30px,5vw,44px);line-height:1.15;margin:10px 0 12px">${esc(d.titre)}</h1>
+<div class="meta">${esc(frDate(d.date))} · avec ${esc(d.intervenant)}${part}</div>
+${paras}
+${pts}
+${merci}
+<p style="margin-top:36px"><a class="btn" href="../index.html#rejoindre">Rejoindre la communauté</a></p>
+</div></section></main>
+<footer><div class="wrap"><div><b style="color:#fff">DevSpace Africa</b><br>Connecter · Apprendre · Innover</div><div><a href="../index.html">Retour au site</a></div></div></footer>
+</body></html>`}
+
+function sitemapXML(origin){
+ const u=[`<url><loc>${origin}/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>`];
+ data.passes.filter(p=>p.slug).forEach(p=>u.push(`<url><loc>${origin}/live/${p.slug}</loc><lastmod>${p.date}</lastmod><priority>0.7</priority></url>`));
+ return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  ${u.join("\n  ")}\n</urlset>\n`}
+
+function drawList(){const l=$("list");l.innerHTML="";
+ if(!data.passes.length){l.textContent="Aucune.";return}
+ data.passes.forEach((p,i)=>{const d=document.createElement("div");d.className="card";d.style.marginBottom="10px";
+  const t=document.createElement("b");t.textContent=p.titre+" ("+p.date+")"+(p.slug?" · résumé":"");
+  const b=document.createElement("button");b.className="tab";b.type="button";b.textContent="Supprimer";b.style.marginLeft="12px";
+  b.onclick=()=>{data.passes.splice(i,1);drawList()};d.append(t,b);l.append(d)})}
+
+fetch("events.json",{cache:"no-store"}).then(r=>r.json()).then(j=>{data=j;data.passes=data.passes||[];F.forEach(k=>$(k).value=(j.prochain||{})[k]||"");drawList()});
+
+document.querySelectorAll(".tab[data-p]").forEach(t=>t.onclick=()=>{
+ document.querySelectorAll(".tab[data-p]").forEach(x=>x.setAttribute("aria-selected",x===t));
+ document.querySelectorAll(".panel").forEach(p=>p.classList.toggle("on",p.id===t.dataset.p))});
+
+$("f").addEventListener("submit",e=>{e.preventDefault();
+ const nv={};F.forEach(k=>nv[k]=$(k).value.trim());
+ const old=data.prochain;
+ if($("archive").checked&&old&&old.titre&&(old.titre!==nv.titre||old.date!==nv.date))
+  data.passes.unshift({titre:old.titre,date:old.date,description:old.description||""});
+ data.prochain=nv;
+ save("events.json",JSON.stringify(data,null,2),"application/json");
+ $("msg").className="msg ok";$("msg").textContent="Fichier téléchargé. Remplace events.json dans ton projet puis publie.";drawList()});
+
+$("g").addEventListener("submit",e=>{e.preventDefault();
+ const d={titre:$("r_titre").value.trim(),date:$("r_date").value,intervenant:$("r_inter").value.trim(),participants:$("r_part").value,
+  resume:$("r_resume").value.trim(),points:$("r_points").value.split("\n").map(x=>x.trim()).filter(Boolean),merci:$("r_merci").value.trim()};
+ d.slug=slug(d.titre)||("live-"+d.date);
+ const origin=location.origin;
+ const entry={titre:d.titre,date:d.date,description:d.resume.replace(/\s+/g," ").slice(0,160),slug:d.slug};
+ const i=data.passes.findIndex(p=>p.slug===d.slug||p.date===d.date);
+ if(i>=0)data.passes[i]=entry;else data.passes.unshift(entry);
+ if(data.prochain&&data.prochain.date===d.date)data.prochain={};
+ data.passes.sort((a,b)=>b.date.localeCompare(a.date));
+ save(d.slug+".html",pageHTML(d,origin),"text/html");
+ setTimeout(()=>save("events.json",JSON.stringify(data,null,2),"application/json"),500);
+ setTimeout(()=>save("sitemap.xml",sitemapXML(origin),"application/xml"),1000);
+ $("msg2").className="msg ok";$("msg2").textContent="3 fichiers générés (autorise les téléchargements multiples si le navigateur le demande). Mets "+d.slug+".html dans le dossier live, et remplace events.json et sitemap.xml.";drawList()});
+</script></body></html>
