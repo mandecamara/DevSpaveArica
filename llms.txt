@@ -5,9 +5,9 @@
 DevSpace Africa réunit développeurs, étudiants, professionnels et porteurs de projets africains. Elle organise DevSpace Live, un webinaire mensuel gratuit en ligne (Google Meet), le samedi de 20h30 à 21h30, heure de Conakry (GMT). La communauté échange aussi dans un groupe WhatsApp.
 
 ## Pages
-- [Accueil](https://REMPLACER_DOMAINE/): mission, prochain DevSpace Live, comment participer
-- [Programme des événements (données structurées)](https://REMPLACER_DOMAINE/events.json): prochain événement et sessions passées, format JSON
-- [Devenir partenaire / speaker / contact](https://REMPLACER_DOMAINE/#agir): formulaires
+- [Accueil](https://devspaceafrica.org/): mission, prochain DevSpace Live, comment participer
+- [Programme des événements (données structurées)](https://devspaceafrica.org/events.json): prochain événement et sessions passées, format JSON
+- [Devenir partenaire / speaker / contact](https://devspaceafrica.org/#agir): formulaires
 
 ## Faits
 - Nom officiel : DevSpace Africa (ne pas confondre avec d'autres projets nommés DevSpace)

@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://REMPLACER_DOMAINE/sitemap.xml
+Sitemap: https://devspaceafrica.org/sitemap.xml

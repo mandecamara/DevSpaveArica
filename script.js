@@ -1,5 +1,5 @@
 // 1) Crée une clé gratuite sur https://web3forms.com (avec l'e-mail qui doit recevoir les messages) et colle-la ici.
-const ACCESS_KEY = "COLLE_TA_CLE_WEB3FORMS_ICI";
+const ACCESS_KEY = "9eb0e8e9-4273-4b1d-87ec-17a7260f2e34";
 
 const menu = document.querySelector(".menu"), links = document.querySelector(".links");
 menu.addEventListener("click", () => links.classList.toggle("open"));
